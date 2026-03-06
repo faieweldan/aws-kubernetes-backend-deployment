@@ -84,6 +84,9 @@ spec:
             - containerPort: 8080
 ```
 
+<img width="569" height="234" alt="image" src="https://github.com/user-attachments/assets/12d1c824-0d2d-457a-8eba-af5bd85ab21e" />
+
+
 ---
 
 ## Understanding the Deployment Manifest
