@@ -4,6 +4,11 @@ In this part of the project, I prepared the backend application so it could late
 
 The goal of this step was to take the backend source code, package it into a **Docker container image**, and store that image in **Amazon ECR (Elastic Container Registry)** so Kubernetes can pull it later when deploying the application.
 
+<img width="631" height="430" alt="image" src="https://github.com/user-attachments/assets/65386385-640c-4709-b773-cfedff2525bf" />
+<img width="630" height="583" alt="image" src="https://github.com/user-attachments/assets/3267f7e5-6cab-4d6a-a394-8b48fd762ba4" />
+
+
+
 ---
 
 ## Overview
@@ -106,6 +111,7 @@ Build command:
 ```bash
 docker build -t nextwork-flask-backend .
 ```
+<img width="568" height="238" alt="image" src="https://github.com/user-attachments/assets/548029ff-4460-4b4a-a7de-7ba2a06da598" />
 
 ### What this does
 
@@ -155,6 +161,7 @@ aws ecr create-repository \
   --repository-name nextwork-flask-backend \
   --image-scanning-configuration scanOnPush=true
 ```
+<img width="565" height="239" alt="image" src="https://github.com/user-attachments/assets/05fc6250-607b-4a71-9b24-ad18f06e7aec" />
 
 ### Why ECR is needed
 
