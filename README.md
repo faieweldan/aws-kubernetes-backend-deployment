@@ -6,6 +6,9 @@ The overall goal of this project was to understand how a backend application mov
 
 The project starts from creating the Kubernetes cluster, then preparing the backend application, creating Kubernetes manifest files, and finally deploying the backend to the cluster.
 
+<img width="681" height="344" alt="image" src="https://github.com/user-attachments/assets/2d0f90e9-ee8c-499a-ada3-9366718b5923" />
+
+
 ## Project Structure
 
 This project is divided into 4 parts:
