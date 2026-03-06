@@ -2,141 +2,152 @@
 
 In this final part of the project, I deployed the backend application to the Kubernetes cluster created earlier.
 
-The goal of this step was to take the **container image stored in Amazon ECR** and deploy it into the **Amazon EKS cluster** using the Kubernetes manifest files created in the previous step.
+By this stage, the following components were already prepared:
 
-This part completes the workflow of moving an application from source code into a running Kubernetes deployment.
+- An **Amazon EKS cluster**
+- A **Docker container image stored in Amazon ECR**
+- Kubernetes **Deployment and Service manifest files**
+
+The goal of this step was to connect to the Kubernetes cluster and deploy the backend using `kubectl`.
+
+This completes the full workflow of moving an application from **source code → container image → Kubernetes deployment**.
 
 ---
 
-## Overview
-
-At this stage of the project, the required components were already prepared:
-
-* Kubernetes cluster running on **Amazon EKS**
-* Backend **Docker image stored in Amazon ECR**
-* Kubernetes **Deployment and Service manifests**
-
-The remaining step was to connect to the cluster and instruct Kubernetes to create the application resources.
+# Overview
 
 The deployment workflow looks like this:
 
-```id="workflow-diagram"
-GitHub Backend Code
-        ↓
-Docker Image Built
-        ↓
-Image Stored in Amazon ECR
-        ↓
-Kubernetes Manifest Files
-        ↓
-kubectl Deploys Application to EKS
-```
+Backend Code (GitHub)  
+↓  
+Docker Image Built  
+↓  
+Image Stored in Amazon ECR  
+↓  
+Kubernetes Manifest Files  
+↓  
+Application Deployed to Amazon EKS  
+
+Each step prepares the application for the next stage until it finally runs inside a Kubernetes cluster.
 
 ---
 
-## Tools Used
+# Tools Used
 
-* Amazon EKS
-* Amazon EC2
-* kubectl
-* Kubernetes YAML manifests
-* Amazon ECR
+- Amazon EKS  
+- Amazon EC2  
+- kubectl  
+- Kubernetes YAML manifests  
+- Amazon ECR  
 
 ---
 
-## Step 1 — Install kubectl
+# Step 1 — Install kubectl
 
-To interact with the Kubernetes cluster, I installed **kubectl**, which is the command line interface used to communicate with the Kubernetes API server.
+To interact with Kubernetes resources, I installed **kubectl**, which is the command-line tool used to communicate with the Kubernetes API server.
 
 Install kubectl:
 
-```bash id="install-kubectl"
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-```
+```bash
+sudo curl -o /usr/local/bin/kubectl \
+https://s3.us-west-2.amazonaws.com/amazon-eks/1.31.0/2024-09-12/bin/linux/amd64/kubectl
+````
 
-Make the binary executable:
+Give executable permissions:
 
-```bash id="chmod-kubectl"
-chmod +x kubectl
-```
-
-Move it into the system path:
-
-```bash id="move-kubectl"
-sudo mv kubectl /usr/local/bin/
+```bash
+sudo chmod +x /usr/local/bin/kubectl
 ```
 
 Verify installation:
 
-```bash id="verify-kubectl"
-kubectl version --client
+```bash
+kubectl version
 ```
+
+kubectl allows us to:
+
+* deploy applications
+* inspect cluster resources
+* monitor workloads
+* troubleshoot deployments
 
 ---
 
-## Step 2 — Connect kubectl to the EKS Cluster
+# Step 2 — Connect kubectl to the EKS Cluster
 
-Next, I configured kubectl so it could communicate with the EKS cluster created earlier.
+Before deploying the application, kubectl needs to know which cluster to connect to.
 
-This updates the Kubernetes configuration file and allows kubectl to authenticate with the cluster.
+This is done by updating the kubeconfig file:
 
-```bash id="update-kubeconfig"
-aws eks update-kubeconfig --region <region> --name nextwork-eks-cluster
+```bash
+aws eks update-kubeconfig --name nextwork-eks-cluster --region <region>
 ```
 
-Once connected, I verified that the cluster nodes were visible:
+This command updates the Kubernetes configuration file located at:
 
-```bash id="get-nodes"
+```
+~/.kube/config
+```
+
+To verify that kubectl is connected to the cluster:
+
+```bash
 kubectl get nodes
 ```
 
-If the nodes appear, it confirms that kubectl is successfully communicating with the EKS cluster.
+If the nodes appear in the output, the connection to the EKS cluster is successful.
 
 ---
 
-## Step 3 — Deploy the Backend Application
+# Step 3 — Deploy the Backend Application
 
-With kubectl connected to the cluster, I deployed the backend using the manifest files created in Part 3.
+Once kubectl is connected to the cluster, the backend application can be deployed using the manifest files created earlier.
 
 Apply the Deployment manifest:
 
-```bash id="apply-deployment"
+```bash
 kubectl apply -f flask-deployment.yaml
 ```
 
 Apply the Service manifest:
 
-```bash id="apply-service"
+```bash
 kubectl apply -f flask-service.yaml
 ```
 
-These commands instruct Kubernetes to create the required resources inside the cluster.
+Running `kubectl apply` tells Kubernetes to create resources based on the configuration defined in the YAML files.
+
+These resources include:
+
+* a **Deployment** that manages backend Pods
+* a **Service** that exposes the backend for network access
 
 ---
 
-## Step 4 — Verify the Deployment
+# Step 4 — Verify the Deployment
 
-After applying the manifests, I checked that the Kubernetes resources were successfully created.
+After applying the manifests, I verified that the resources were successfully created.
 
 Check running Pods:
 
-```bash id="get-pods"
+```bash
 kubectl get pods
 ```
 
 Check Deployments:
 
-```bash id="get-deployments"
+```bash
 kubectl get deployments
 ```
 
 Check Services:
 
-```bash id="get-services"
+```bash
 kubectl get services
 ```
 
-If everything is working correctly, Kubernetes should show:
+If the deployment is successful, Kubernetes should show:
 
 * multiple running Pods
 * an active Deployment
@@ -144,82 +155,103 @@ If everything is working correctly, Kubernetes should show:
 
 ---
 
-## Understanding What Kubernetes Does
+# Inspecting the Deployment in Amazon EKS
 
-Once the manifests are applied, Kubernetes begins working to match the **desired state** defined in the YAML files.
+To better understand how the application was deployed, I also inspected the cluster directly from the **Amazon EKS console**.
 
-For example:
+Steps taken:
 
-* The Deployment ensures **three replicas** of the backend are running
-* If a Pod fails, Kubernetes automatically creates a replacement
-* The Service routes traffic to the correct Pods
+1. Open the **Amazon EKS Console**
+2. Select the cluster `nextwork-eks-cluster`
+3. Navigate to the **Compute** tab
+4. Review the **Node Groups**
 
-This automated management is one of the main advantages of Kubernetes.
+The node group contains multiple **EC2 instances** that act as Kubernetes worker nodes.
+
+These nodes are responsible for running containers managed by Kubernetes.
 
 ---
 
-## Observing the Deployment
+# Viewing Pods in the Cluster
 
-Kubernetes provides commands that allow developers to inspect and monitor running applications.
+Pods represent the smallest deployable unit in Kubernetes.
 
-Examples include:
+Each Pod contains one or more containers running the application.
 
-Check detailed Pod information:
+List all Pods:
 
-```bash id="describe-pod"
+```bash
+kubectl get pods
+```
+
+Inspect a specific Pod:
+
+```bash
 kubectl describe pod <pod-name>
 ```
 
-View application logs:
+This command displays detailed information about the Pod, including:
 
-```bash id="pod-logs"
-kubectl logs <pod-name>
-```
-
-These commands help troubleshoot issues and observe application behavior inside the cluster.
+* container status
+* resource usage
+* networking information
+* deployment events
 
 ---
 
-## Cleaning Up Resources
+# Understanding Pod Events
 
-Since this project was created for learning purposes, it is important to remove the resources afterward to avoid unnecessary AWS charges.
+The **Events** section shows the lifecycle of the container deployment.
+
+Typical events include:
+
+* Pod scheduled to a node
+* Container image pulled from Amazon ECR
+* Container created
+* Container started
+
+These events confirm that Kubernetes successfully retrieved the container image and started the backend application inside the cluster.
+
+---
+
+# Understanding Replicas
+
+The Deployment manifest specified the number of replicas:
+
+```yaml
+replicas: 3
+```
+
+This means Kubernetes maintains **three identical Pods** running the backend application.
+
+If one Pod crashes or fails, Kubernetes automatically creates a replacement Pod to maintain the desired state.
+
+---
+
+# Cleaning Up Resources
+
+Since this project was created for learning purposes, it is important to remove resources afterward to avoid unnecessary AWS charges.
 
 Delete the EKS cluster:
 
-```bash id="delete-cluster"
-eksctl delete cluster --name nextwork-eks-cluster
+```bash
+eksctl delete cluster --name nextwork-eks-cluster --region <region>
 ```
 
 Terminate the EC2 instance from the AWS console.
 
 Delete the ECR repository from the ECR dashboard.
 
-Cleaning up resources ensures that the **EKS hourly control plane cost (~$0.10 per hour)** does not continue accumulating.
+This prevents the **EKS control plane cost (~$0.10 per hour)** from continuing to run.
 
 ---
 
-## What I Learned
-
-This final part tied together the entire Kubernetes workflow.
-
-Important ideas that became clearer during this step:
-
-* kubectl communicates with the Kubernetes API server
-* manifest files define the desired application state
-* Kubernetes automatically manages container replicas
-* Services provide stable networking access to Pods
-* container images stored in ECR allow Kubernetes to launch containers consistently
-
----
-
-## Key Takeaways
+# Key Takeaways
 
 From this step I learned:
 
-* How to connect kubectl to an EKS cluster
-* How to deploy applications using Kubernetes manifests
-* How Kubernetes manages Pods and replicas automatically
-* How Services route traffic to backend containers
-* How to inspect and troubleshoot Kubernetes workloads
-
-This step completed the process of deploying a containerized backend application onto a Kubernetes cluster running on AWS.
+* how to connect kubectl to an EKS cluster
+* how to deploy applications using Kubernetes manifests
+* how Kubernetes manages Pods and replicas automatically
+* how Services route traffic to backend containers
+* how to inspect Kubernetes workloads and deployment events
