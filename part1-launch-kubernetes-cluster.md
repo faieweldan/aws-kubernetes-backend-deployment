@@ -4,6 +4,9 @@ In this part of the project, I created a Kubernetes cluster using **Amazon EKS (
 
 The goal of this step was to understand how Kubernetes clusters are created on AWS and what infrastructure is required behind the scenes before we can deploy any application.
 
+<img width="675" height="326" alt="image" src="https://github.com/user-attachments/assets/43cef7c7-c382-4b35-bf4d-aa84ea6bd537" />
+
+
 ---
 
 ## Overview
@@ -35,6 +38,11 @@ Configuration used:
 * Instance type: `t3.micro`
 * Default security group
 * Connected using **EC2 Instance Connect**
+
+<img width="564" height="418" alt="image" src="https://github.com/user-attachments/assets/d19aedd5-f330-47c3-bcb5-8fe74d36affc" />
+<img width="568" height="279" alt="image" src="https://github.com/user-attachments/assets/c88a1c1a-a820-4da4-a948-d73110eed38e" />
+
+
 
 This instance serves as a workspace where tools like `eksctl`, `kubectl`, and `docker` can be installed.
 
@@ -88,6 +96,8 @@ AdministratorAccess
 
 This role was then attached to the EC2 instance.
 
+<img width="563" height="342" alt="image" src="https://github.com/user-attachments/assets/b75fa16b-2e8b-4251-a1fa-86bc21dda2f7" />
+
 ### Why this is necessary
 
 The EC2 instance needs permission to:
@@ -120,6 +130,8 @@ eksctl create cluster \
   --version 1.33 \
   --region <your-region>
 ```
+<img width="674" height="212" alt="image" src="https://github.com/user-attachments/assets/622280a5-0a05-4feb-8e9e-a6827ab832cb" />
+
 
 This command provisions:
 
